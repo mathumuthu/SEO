@@ -38,7 +38,7 @@ body {
 
 /* Top Red Header */
 .login-header {
-    background: #091657;
+    background: #2d12c5;
     padding: 30px 25px;
     text-align: center;
     color: #fff;
@@ -431,7 +431,8 @@ body {
             <!-- <img src="img/logo1.webp" alt="Stackly Logo"> -->
             <h2>Stackly</h2>
         </div>
-<p id="userEmail" style="font-size:14px;color:#666;"></p>    </div>
+        <p>Welcome back! Please login to continue.</p>
+    </div>
 
     <!-- User Type Tabs -->
     <div class="user-tabs">
@@ -712,7 +713,17 @@ if (!passwordRegex.test(password)) {
 if (userName) {
     localStorage.setItem("loggedInName", userName);
 }
-    window.location.href = '404.html';
+    showAlert('Login successful! Welcome ' + currentUserType.charAt(0).toUpperCase() + currentUserType.slice(1), 'success');
+
+    setTimeout(() => {
+        if (currentUserType === 'admin') {
+            window.location.href = 'admin.html';
+        } else if (currentUserType === 'donor') {
+            window.location.href = 'user.html';
+        } else {
+            window.location.href = 'user.html';
+        }
+    }, 1500);
 }
 
 // ========== CLOSE MODAL ON OUTSIDE CLICK ==========
@@ -725,16 +736,6 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') hideModal();
 });
 </script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
 
-    const email = localStorage.getItem("loggedInEmail");
-
-    if(email){
-        document.getElementById("userEmail").innerText = email;
-    }
-
-});
-</script>
 </body>
 </html>
