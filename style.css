@@ -1382,3 +1382,29 @@ ul, ol {
 .about-image{
     overflow:hidden;
 }
+.blog-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.blog-card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-title {
+    min-height: 55px;
+}
+
+.card-text {
+    min-height: 75px;
+}
+
+.read-more {
+    margin-top: auto;
+}
+.grid-3 .blog-card{
+    min-height: 420px;
+}

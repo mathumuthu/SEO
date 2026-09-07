@@ -698,9 +698,9 @@
          <div class="sidebar-profile">
             <img src="12img.webp" alt="Admin">
             <div class="sidebar-profile-info">
-                <p class="name">Marcus Chen</p>
-                <p class="role">Agency Admin</p>
-            </div>
+    <p class="name" id="sidebarUserName">User</p>
+    <p class="role">Agency Admin</p>
+</div>
             <div class="online-dot"></div>
         </div>
 
@@ -954,13 +954,13 @@
                                         <a href="404.html" class="quick-action-btn">
                                             <i class="fas fa-plus-circle text-primary"></i>
                                             <span>New Campaign</span>
-                                            <small>Launch a marketing campaign</small>
+                                            <small>Launch a marketing </small>
                                         </a>
                                     </div>
                                     <div class="col-6">
                                         <a href="404.html" class="quick-action-btn">
                                             <i class="fas fa-user-plus" style="color:#8b5cf6"></i>
-                                            <span>Add Client</span>
+                                            <span>Add Client Details</span>
                                             <small>Onboard new client</small>
                                         </a>
                                     </div>
@@ -975,7 +975,7 @@
                                         <a href="404.html" class="quick-action-btn">
                                             <i class="fas fa-palette text-warning"></i>
                                             <span>Manage Services</span>
-                                            <small>Update service offerings</small>
+                                            <small>Update service </small>
                                         </a>
                                     </div>
                                 </div>
@@ -1752,7 +1752,27 @@ window.addEventListener("load", () => {
     }
 
 });
+document.addEventListener("DOMContentLoaded", function () {
 
+    let name = localStorage.getItem("loggedInName");
+    let email = localStorage.getItem("loggedInEmail");
+
+    if (!name && email) {
+        name = email.split("@")[0];
+    }
+
+    if (name) {
+        const userNameEl = document.getElementById("sidebarUserName");
+        if (userNameEl) {
+            userNameEl.textContent = name;
+        }
+
+        const welcomeUser = document.getElementById("welcomeUser");
+        if (welcomeUser) {
+            welcomeUser.textContent = "Welcome, " + name;
+        }
+    }
+});
 
 
     </script>
