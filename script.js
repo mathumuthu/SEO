@@ -142,33 +142,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Blog Category Filter
-  const categoryBtns = document.querySelectorAll('.category-btn');
+  // const categoryBtns = document.querySelectorAll('.category-btn');
 
-  categoryBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Update active state
-      categoryBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  // categoryBtns.forEach(btn => {
+  //   btn.addEventListener('click', () => {
+  //     // Update active state
+  //     categoryBtns.forEach(b => b.classList.remove('active'));
+  //     btn.classList.add('active');
 
-      const category = btn.dataset.category;
+  //     const category = btn.dataset.category;
 
-      blogCards.forEach(card => {
-        if (category === 'all' || card.dataset.category === category) {
-          card.style.display = 'flex';
-          // Small fade-in effect
-          card.style.opacity = '0';
-          card.style.transform = 'translateY(10px)';
-          setTimeout(() => {
-            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-          }, 50);
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    });
-  });
+  //     blogCards.forEach(card => {
+  //       if (category === 'all' || card.dataset.category === category) {
+  //         card.style.display = 'flex';
+  //         // Small fade-in effect
+  //         card.style.opacity = '0';
+  //         card.style.transform = 'translateY(10px)';
+  //         setTimeout(() => {
+  //           card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  //           card.style.opacity = '1';
+  //           card.style.transform = 'translateY(0)';
+  //         }, 50);
+  //       } else {
+  //         card.style.display = 'none';
+  //       }
+  //     });
+  //   });
+  // });
 
   // Login Form Basic Validation
   const loginForm = document.getElementById('loginForm');
