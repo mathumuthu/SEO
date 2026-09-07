@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Agency - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #06b6d4;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
+        }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; overflow-x: hidden; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #fff;
+            border-right: 1px solid #e2e8f0;
+            z-index: 1040;
+            transition: transform 0.3s ease, width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar.collapsed { width: var(--sidebar-collapsed); }
+        .sidebar-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .logo-icon {
+            width: 20px; height: 20px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.1rem;
+        }
+        .logo-text { font-weight: 700; font-size: 1.1rem; color: var(--dark); }
+        .sidebar-close {
+            background: none; border: none;
+            width: 22px; height: 22px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--secondary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .sidebar-close:hover { background: #f1f5f9; }
+
+        .sidebar-profile {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .sidebar-profile img {
+            width: 40px; height: 40px;
+            border-radius: 50%; object-fit: cover;
+            border: 2px solid #e2e8f0;
+        }
+        .sidebar-profile-info { flex: 1; min-width: 0; }
+        .sidebar-profile-info p { margin: 0; }
+        .sidebar-profile-info .name { font-weight: 600; font-size: 0.875rem; color: var(--dark); }
+        .sidebar-profile-info .role { font-size: 0.75rem; color: var(--secondary); }
+        .online-dot {
+            width: 8px; height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .menu-item { margin-bottom: 0.25rem; }
+        .menu-link {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none; background: none; width: 100%; text-align: left;
+            cursor: pointer;
+        }
+        .menu-link:hover, .menu-link.active {
+            background: rgba(99,102,241,0.08);
+            color: var(--primary);
+        }
+        .menu-link.active { border-right: 3px solid var(--primary); }
+        .menu-icon { width: 20px; text-align: center; font-size: 1rem; }
+        .menu-badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+        }
+        .sidebar-section-title {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .sidebar-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .logout-btn {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            color: var(--danger);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: rgba(239,68,68,0.08); }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1035;
+            display: none;
+        }
+        .mobile-overlay.show { display: block; }
+
+        /* Main Wrapper */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease;
+        }
+        .main-wrapper.sidebar-collapsed { margin-left: var(--sidebar-collapsed); }
+
+        /* Header */
+        .main-header {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 1020;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .hamburger-menu, .sidebar-toggle {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            border: none; background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--secondary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .hamburger-menu:hover, .sidebar-toggle:hover { background: #e2e8f0; }
+        .header-title h1 { font-size: 1.25rem; font-weight: 700; color: var(--dark); margin: 0; }
+        .header-title p { font-size: 0.8rem; color: var(--secondary); margin: 0; }
+        .header-right { display: flex; align-items: center; gap: 0.75rem; }
+        .header-icon-wrapper { position: relative; }
+        .header-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--secondary);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .header-icon:hover { background: #e2e8f0; }
+        .notification-badge {
+            position: absolute; top: 4px; right: 4px;
+            width: 8px; height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+        }
+        .header-profile {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding-left: 0.75rem;
+            border-left: 1px solid #e2e8f0;
+        }
+        .header-profile img {
+            width: 36px; height: 36px;
+            border-radius: 50%; object-fit: cover;
+        }
+        .header-profile-info { line-height: 1.2; }
+        .header-profile-info .name { font-weight: 600; font-size: 0.85rem; color: var(--dark); }
+        .header-profile-info .role { font-size: 0.75rem; color: var(--secondary); }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 1.5rem; }
+        .content-section { display: none; animation: fadeIn 0.3s ease; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Stat Cards */
+        .stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        .stat-card-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--secondary); margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--dark); margin-bottom: 0.25rem; }
+        .stat-change { font-size: 0.75rem; }
+        .stat-change.positive { color: var(--success); }
+        .stat-change.negative { color: var(--danger); }
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+        }
+        .bg-primary-soft { background: rgba(99,102,241,0.1); }
+        .bg-success-soft { background: rgba(16,185,129,0.1); }
+        .bg-warning-soft { background: rgba(245,158,11,0.1); }
+        .bg-danger-soft { background: rgba(239,68,68,0.1); }
+        .bg-info-soft { background: rgba(6,182,212,0.1); }
+        .text-primary { color: var(--primary) !important; }
+        .text-success { color: var(--success) !important; }
+        .text-warning { color: var(--warning) !important; }
+        .text-danger { color: var(--danger) !important; }
+        .text-info { color: var(--info) !important; }
+
+        /* Content Cards */
+        .content-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+                height: 100%;
+
+        }
+        .card-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header-custom h5 { font-weight: 600; color: var(--dark); margin: 0; }
+        .card-body-custom { padding: 1.5rem; }
+
+        /* Tables */
+        .table-custom { width: 100%; margin-bottom: 0; }
+        .table-custom thead th {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .table-custom tbody td {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            color: var(--dark);
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .table-custom tbody tr:hover { background: #f8fafc; }
+        .client-info { display: flex; align-items: center; gap: 0.75rem; }
+        .client-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%; object-fit: cover;
+        }
+        .badge-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-active { background: rgba(16,185,129,0.1); color: var(--success); }
+        .status-pending { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .status-closed { background: rgba(99,102,241,0.1); color: var(--primary); }
+        .status-inactive { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .case-id { font-family: monospace; font-weight: 600; color: var(--primary); }
+        .btn-action {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            display: inline-flex; align-items: center; justify-content: center;
+            color: var(--secondary);
+            text-decoration: none;
+            margin-right: 0.25rem;
+            transition: all 0.2s;
+        }
+        .btn-action:hover { background: rgba(99,102,241,0.1); color: var(--primary); }
+
+        /* Category Cards */
+        .category-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        .category-icon {
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+        .category-card h4 { font-size: 1rem; font-weight: 600; color: var(--dark); margin-bottom: 0.5rem; }
+        .category-card p { font-size: 0.8rem; color: var(--secondary); margin-bottom: 1rem; }
+
+        /* Document Cards */
+        .document-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .document-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        .document-icon {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            background: rgba(99,102,241,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .document-card h5 { font-size: 1rem; font-weight: 600; color: var(--dark); margin-bottom: 0.5rem; }
+        .document-card p { font-size: 0.8rem; color: var(--secondary); margin-bottom: 1rem; }
+        .document-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .document-meta span { font-size: 0.75rem; color: var(--secondary); }
+
+        /* Team Cards */
+        .team-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .team-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        .team-card img {
+            width: 80px; height: 80px;
+            border-radius: 50%; object-fit: cover;
+            border: 3px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        .team-card h4 { font-size: 1rem; font-weight: 600; color: var(--dark); margin-bottom: 0.25rem; }
+        .team-card .role { font-size: 0.8rem; color: var(--primary); margin-bottom: 0.5rem; }
+        .team-card .projects { font-size: 0.75rem; color: var(--secondary); margin-bottom: 1rem; }
+
+        /* Service Cards */
+        .service-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        .service-icon {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .service-card h4 { font-size: 1rem; font-weight: 600; color: var(--dark); margin-bottom: 0.5rem; }
+        .service-card p { font-size: 0.8rem; color: var(--secondary); margin-bottom: 1rem; }
+        .service-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .service-stat span:first-child { font-size: 0.75rem; color: var(--secondary); }
+        .service-stat span:last-child { font-size: 0.875rem; font-weight: 600; color: var(--dark); }
+
+        /* Progress Bars */
+        .progress-custom { height: 8px; border-radius: 4px; background: #f1f5f9; overflow: hidden; margin-bottom: 1rem; }
+        .progress-bar-custom { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+        /* Chart Placeholder */
+        .chart-placeholder { height: 250px; position: relative; }
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            gap: 1rem;
+            padding: 0 1rem;
+        }
+        .chart-bar {
+            flex: 1;
+            background: var(--primary);
+            border-radius: 8px 8px 0 0;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .chart-bar:hover { opacity: 1; }
+        .chart-labels {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 1rem;
+        }
+        .chart-labels span { font-size: 0.75rem; color: var(--secondary); }
+
+        /* Distribution Chart */
+        .distribution-item { margin-bottom: 1rem; }
+        .distribution-info { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .distribution-name { font-size: 0.8rem; color: var(--dark); }
+        .distribution-value { font-size: 0.8rem; font-weight: 600; color: var(--dark); }
+
+        /* Notification Items */
+        .notification-item {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+        }
+        .notification-item:hover { background: #f8fafc; }
+        .notification-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .notification-content { flex: 1; }
+        .notification-content p { margin: 0; }
+        .notification-title { font-weight: 600; font-size: 0.875rem; color: var(--dark); }
+        .notification-desc { font-size: 0.8rem; color: var(--secondary); }
+        .notification-time { font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem; }
+
+        /* Message Chat */
+        .chat-container { display: flex; flex-direction: column; height: 500px; }
+        .chat-sidebar { border-right: 1px solid #e2e8f0; }
+        .chat-contact {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chat-contact:hover, .chat-contact.active { background: #f8fafc; }
+        .chat-contact img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+        .chat-contact-info { flex: 1; }
+        .chat-contact-info p { margin: 0; }
+        .chat-contact-name { font-weight: 600; font-size: 0.875rem; color: var(--dark); }
+        .chat-contact-msg { font-size: 0.75rem; color: var(--secondary); }
+        .chat-contact-time { font-size: 0.7rem; color: var(--secondary); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; }
+        .chat-message {
+            display: flex; gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .chat-message.sent { justify-content: flex-end; }
+        .chat-message img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .chat-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-size: 0.875rem;
+        }
+        .chat-bubble.received { background: #f1f5f9; color: var(--dark); border-radius: 16px 16px 16px 4px; }
+        .chat-bubble.sent { background: var(--primary); color: #fff; border-radius: 16px 16px 4px 16px; }
+        .chat-bubble-time { font-size: 0.7rem; margin-top: 0.25rem; opacity: 0.7; }
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex; gap: 0.75rem;
+        }
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            outline: none;
+        }
+        .chat-input:focus { border-color: var(--primary); }
+        .chat-send-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-send-btn:hover { background: var(--primary-dark); }
+
+        /* Settings Form */
+        .settings-form .form-label { font-size: 0.875rem; font-weight: 500; color: var(--dark); margin-bottom: 0.5rem; }
+        .form-control-custom {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            color: var(--dark);
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .form-control-custom:focus { outline: none; border-color: var(--primary); }
+        .form-check-custom {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 0;
+        }
+        .toggle-switch {
+            width: 48px; height: 26px;
+            border-radius: 13px;
+            background: #e2e8f0;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .toggle-switch.on { background: var(--primary); }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: #fff;
+            top: 2px; left: 2px;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .toggle-switch.on::after { transform: translateX(22px); }
+
+        /* Footer */
+        .main-footer {
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 991.98px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-wrapper { margin-left: 0 !important; }
+            .sidebar-toggle { display: none !important; }
+        }
+        @media (min-width: 992px) {
+            .hamburger-menu { display: none !important; }
+            .sidebar-close { display: none !important; }
+        }
+
+        /* Section Header */
+        .section-header { margin-bottom: 1.5rem; }
+        .section-title { font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-bottom: 0.5rem; }
+        .breadcrumb { font-size: 0.8rem; margin: 0; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .breadcrumb-item.active { color: var(--secondary); }
+
+        /* Activity Feed */
+        .activity-item {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .activity-content p { margin: 0; }
+        .activity-title { font-size: 0.875rem; font-weight: 500; color: var(--dark); }
+        .activity-time { font-size: 0.75rem; color: var(--secondary); }
+
+        /* Quick Action Buttons */
+        .quick-action-btn {
+            display: block;
+            padding: 1.25rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .quick-action-btn:hover {
+            background: rgba(99,102,241,0.05);
+            border-color: rgba(99,102,241,0.2);
+        }
+        .quick-action-btn i { font-size: 1.5rem; margin-bottom: 0.75rem; display: block; }
+        .quick-action-btn span { font-size: 0.875rem; font-weight: 600; color: var(--dark); display: block; }
+        .quick-action-btn small { font-size: 0.75rem; color: var(--secondary); }
+
+/* Desktop */
+@media (min-width: 992px) {
+    .hamburger-menu,
+    .sidebar-toggle {
+        display: none !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 991.98px) {
+    .hamburger-menu {
+        display: flex !important;
+    }
+
+    .sidebar-toggle {
+        display: none !important;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+    <img src="logo .webp"
+         alt="Stackly Logo"
+         style="   width:45px;height:45px;border-radius:10px;object-fit:cover;">
+
+    <span class="logo-text">Stackly</span>
+</a>
+            <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        </div>
+
+         <div class="sidebar-profile">
+            <img src="12img.webp" alt="Admin">
+            <div class="sidebar-profile-info">
+                <p class="name">Marcus Chen</p>
+                <p class="role">Agency Admin</p>
+            </div>
+            <div class="online-dot"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <button class="menu-link active" onclick="showSection('dashboard')" id="nav-dashboard">
+                        <i class="fas fa-th-large menu-icon"></i>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <!-- <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('clients')" id="nav-clients">
+                        <i class="fas fa-users menu-icon"></i>
+                        <span>Clients</span>
+                    </button>
+                </li> -->
+                <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('projects')" id="nav-projects">
+                        <i class="fas fa-folder-open menu-icon"></i>
+                        <span>Projects</span>
+                    </button>
+                </li>
+                <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('services')" id="nav-services">
+                        <i class="fas fa-bullhorn menu-icon"></i>
+                        <span>Services</span>
+                    </button>
+                </li>
+                <!-- <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('team')" id="nav-team">
+                        <i class="fas fa-user-tie menu-icon"></i>
+                        <span>Team Members</span>
+                    </button>
+                </li> -->
+                <!-- <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('messages')" id="nav-messages">
+                        <i class="fas fa-envelope menu-icon"></i>
+                        <span>Messages</span>
+                        <span class="menu-badge">3</span>
+                    </button>
+                </li> -->
+                <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('reports')" id="nav-reports">
+                        <i class="fas fa-file-alt menu-icon"></i>
+                        <span>Reports</span>
+                    </button>
+                </li>
+                <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('analytics')" id="nav-analytics">
+                        <i class="fas fa-chart-line menu-icon"></i>
+                        <span>Analytics</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="sidebar-section-title">Preferences</div>
+         <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('settings')" id="nav-settings">
+                        <i class="fas fa-cog menu-icon"></i>
+                        <span>Settings</span>
+                    </button>
+                </li>
+                <!-- <li class="menu-item">
+                    <button class="menu-link" onclick="showSection('profile')" id="nav-profile">
+                        <i class="fas fa-id-card menu-icon"></i>
+                        <span>Profile</span>
+                    </button>
+                </li>
+            </ul>  -->
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="login.html" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper" id="mainWrapper">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="hamburger-menu" id="hamburgerMenu"><i class="fas fa-bars"></i></button>              <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+               <div class="header-title">
+    <h1 id="pageTitle">Dashboard Overview</h1>
+    <p id="welcomeUser">Welcome</p>
+</div>
+            </div>
+            <div class="header-right">
+                <div class="header-icon-wrapper">
+                    <a href="404.html" class="header-icon"><i class="fas fa-bell"></i><span class="notification-badge"></span></a>
+                </div>
+                <div class="header-icon-wrapper">
+                    <a href="404.html" class="header-icon"><i class="fas fa-search"></i></a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- DASHBOARD SECTION -->
+            <section class="content-section active" id="dashboard">
+                <div class="section-header">
+                    <h1 class="section-title">Dashboard Overview</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Dashboard</li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-card-content">
+                                <div>
+                                    <p class="stat-label">Total Clients</p>
+                                    <h3 class="stat-value">248</h3>
+                                    <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 12% from last month</p>
+                                </div>
+                                <div class="stat-icon bg-primary-soft"><i class="fas fa-users text-primary"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-card-content">
+                                <div>
+                                    <p class="stat-label">Active Projects</p>
+                                    <h3 class="stat-value">36</h3>
+                                    <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 8% from last month</p>
+                                </div>
+                                <div class="stat-icon bg-success-soft"><i class="fas fa-briefcase text-success"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-card-content">
+                                <div>
+                                    <p class="stat-label">Revenue YTD</p>
+                                    <h3 class="stat-value">$1.8M</h3>
+                                    <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 24% from last month</p>
+                                </div>
+                                <div class="stat-icon bg-warning-soft"><i class="fas fa-dollar-sign text-warning"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-card-content">
+                                <div>
+                                    <p class="stat-label">Live Campaigns</p>
+                                    <h3 class="stat-value">58</h3>
+                                    <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 18% from last month</p>
+                                </div>
+                                <div class="stat-icon bg-info-soft"><i class="fas fa-bullhorn text-info"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+<div class="content-card h-100">                            <div class="card-header-custom">
+                                <h5 class="card-title">Revenue Analytics</h5>
+                                <a href="404.html" class="btn btn-sm btn-primary" style="background:var(--primary);border-color:var(--primary)">View Report</a>
+                            </div>
+                            <div class="card-body-custom" style="height:420px;">
+    <div class="chart-container h-100">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+<div class="content-card h-100">                            <div class="card-header-custom"><h5 class="card-title">Project Status</h5></div>
+                            <div class="card-body-custom">
+                                <div style="height:200px"><canvas id="projectStatusChart"></canvas></div>
+                                <div class="mt-3">
+                                    <div class="distribution-item">
+                                        <div class="distribution-info"><span class="distribution-name">Active</span><span class="distribution-value">22</span></div>
+                                        <div class="progress-custom"><div class="progress-bar-custom bg-primary" style="width:49%"></div></div>
+                                    </div>
+                                    <div class="distribution-item">
+                                        <div class="distribution-info"><span class="distribution-name">Completed</span><span class="distribution-value">15</span></div>
+                                        <div class="progress-custom"><div class="progress-bar-custom bg-success" style="width:33%"></div></div>
+                                    </div>
+                                    <div class="distribution-item">
+                                        <div class="distribution-info"><span class="distribution-name">Pending</span><span class="distribution-value">8</span></div>
+                                        <div class="progress-custom"><div class="progress-bar-custom bg-warning" style="width:18%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity & Quick Actions -->
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="content-card">
+                            <div class="card-header-custom">
+                                <h5 class="card-title">Recent Activity</h5>
+                                <a href="404.html" class="text-primary" style="font-size:0.8rem">View All</a>
+                            </div>
+                            <div class="card-body-custom">
+                                <div class="activity-item">
+                                    <div class="activity-icon bg-primary-soft"><i class="fas fa-rocket text-primary" style="font-size:0.8rem"></i></div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">New campaign launched: <span style="color:var(--primary)">Summer Social Media Campaign</span></p>
+                                        <p class="activity-time">2 minutes ago by Sarah Johnson</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon bg-success-soft"><i class="fas fa-check text-success" style="font-size:0.8rem"></i></div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Project completed: <span style="color:var(--success)">E-Commerce Website Redesign</span></p>
+                                        <p class="activity-time">1 hour ago by David Kim</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon" style="background:rgba(139,92,246,0.1)"><i class="fas fa-user-plus" style="color:#8b5cf6;font-size:0.8rem"></i></div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">New client onboarded: <span style="color:#8b5cf6">GreenLeaf Organics</span></p>
+                                        <p class="activity-time">3 hours ago by Marcus Chen</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon bg-warning-soft"><i class="fas fa-exclamation text-warning" style="font-size:0.8rem"></i></div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Budget alert: <span style="color:var(--warning)">July ad spend 85% utilized</span></p>
+                                        <p class="activity-time">5 hours ago by System</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+<div class="content-card h-100">                            <div class="card-header-custom"><h5 class="card-title">Quick Actions</h5></div>
+                            <div class="card-body-custom">
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <a href="404.html" class="quick-action-btn">
+                                            <i class="fas fa-plus-circle text-primary"></i>
+                                            <span>New Campaign</span>
+                                            <small>Launch a marketing campaign</small>
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="404.html" class="quick-action-btn">
+                                            <i class="fas fa-user-plus" style="color:#8b5cf6"></i>
+                                            <span>Add Client</span>
+                                            <small>Onboard new client</small>
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="404.html" class="quick-action-btn">
+                                            <i class="fas fa-file-invoice text-success"></i>
+                                            <span>Generate Report</span>
+                                            <small>Create monthly report</small>
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="404.html" class="quick-action-btn">
+                                            <i class="fas fa-palette text-warning"></i>
+                                            <span>Manage Services</span>
+                                            <small>Update service offerings</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CLIENTS SECTION -->
+            <section class="content-section" id="clients">
+                <div class="section-header">
+                    <h1 class="section-title">Client Management</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Clients</li>
+                        </ol>
+                    </nav>
+                </div>
+<div class="content-card h-100">                    <div class="card-header-custom">
+                        <h5 class="card-title">All Clients</h5>
+                        <a href="404.html" class="btn btn-sm btn-primary" style="background:var(--primary);border-color:var(--primary)"><i class="fas fa-plus me-2"></i>Add Client</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr><th>Client</th><th>Industry</th><th>Projects</th><th>Status</th><th>Revenue</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div class="client-info"><img src="asha.webp" class="client-avatar" alt=""><span>FashionHub Retail</span></div></td>
+                                    <td>E-Commerce</td><td>5</td>
+                                    <td><span class="badge-status status-active">Active</span></td>
+                                    <td><strong>$450,000</strong></td>
+                                    <td><a href="404.html" class="btn-action"><i class="fas fa-eye"></i></a><a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="client-info"><img src="men.webp" class="client-avatar" alt=""><span>GreenLeaf Organics</span></div></td>
+                                    <td>Food & Beverage</td><td>3</td>
+                                    <td><span class="badge-status status-active">Active</span></td>
+                                    <td><strong>$280,000</strong></td>
+                                    <td><a href="404.html" class="btn-action"><i class="fas fa-eye"></i></a><a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="client-info"><img src="5.webp" class="client-avatar" alt=""><span>TechNova Solutions</span></div></td>
+                                    <td>Technology</td><td>7</td>
+                                    <td><span class="badge-status status-pending">Pending</span></td>
+                                    <td><strong>$620,000</strong></td>
+                                    <td><a href="404.html" class="btn-action"><i class="fas fa-eye"></i></a><a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="client-info"><img src="men.webp" class="client-avatar" alt=""><span>UrbanFit Gyms</span></div></td>
+                                    <td>Fitness</td><td>2</td>
+                                    <td><span class="badge-status status-active">Active</span></td>
+                                    <td><strong>$180,000</strong></td>
+                                    <td><a href="404.html" class="btn-action"><i class="fas fa-eye"></i></a><a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="client-info"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop&crop=face" class="client-avatar" alt=""><span>BrightPath Education</span></div></td>
+                                    <td>Education</td><td>4</td>
+                                    <td><span class="badge-status status-inactive">Inactive</span></td>
+                                    <td><strong>$95,000</strong></td>
+                                    <td><a href="404.html" class="btn-action"><i class="fas fa-eye"></i></a><a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-body-custom" style="border-top:1px solid #e2e8f0;padding-top:1rem">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="font-size:0.8rem;color:var(--secondary)">Showing 5 of 248 clients</span>
+                            <div class="d-flex gap-2">
+                                <a href="404.html" class="btn btn-sm btn-outline-secondary">Previous</a>
+                                <a href="404.html" class="btn btn-sm btn-outline-secondary">Next</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJECTS SECTION -->
+            <section class="content-section" id="projects">
+                <div class="section-header">
+                    <h1 class="section-title">Project Management</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Projects</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+<div class="content-card h-100">                            <div class="card-header-custom">
+                                <h5 class="card-title">Active Projects</h5>
+                                <a href="404.html" class="btn btn-sm btn-primary" style="background:var(--primary);border-color:var(--primary)"><i class="fas fa-plus me-2"></i>New Project</a>
+                            </div>
+                            <div class="card-body-custom">
+                                <div class="mb-4 p-3 rounded-3" style="border:1px solid #e2e8f0">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div><h6 class="fw-bold mb-1">E-Commerce Website Redesign</h6><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">FashionHub Retail</p></div>
+                                        <span class="badge-status status-closed">In Progress</span>
+                                    </div>
+                                    <div class="mb-2"><div class="d-flex justify-content-between" style="font-size:0.8rem"><span style="color:var(--secondary)">Progress</span><span class="fw-bold">75%</span></div><div class="progress-custom"><div class="progress-bar-custom bg-primary" style="width:75%"></div></div></div>
+                                    <div class="d-flex gap-4" style="font-size:0.8rem;color:var(--secondary)"><span><i class="fas fa-calendar me-1"></i>Due: Aug 15, 2026</span><span><i class="fas fa-users me-1"></i>4 members</span></div>
+                                </div>
+                                <div class="mb-4 p-3 rounded-3" style="border:1px solid #e2e8f0">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div><h6 class="fw-bold mb-1">Social Media Brand Campaign</h6><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">GreenLeaf Organics</p></div>
+                                        <span class="badge-status status-active">Review</span>
+                                    </div>
+                                    <div class="mb-2"><div class="d-flex justify-content-between" style="font-size:0.8rem"><span style="color:var(--secondary)">Progress</span><span class="fw-bold">92%</span></div><div class="progress-custom"><div class="progress-bar-custom bg-success" style="width:92%"></div></div></div>
+                                    <div class="d-flex gap-4" style="font-size:0.8rem;color:var(--secondary)"><span><i class="fas fa-calendar me-1"></i>Due: Jul 30, 2026</span><span><i class="fas fa-users me-1"></i>6 members</span></div>
+                                </div>
+                                <div class="p-3 rounded-3" style="border:1px solid #e2e8f0">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div><h6 class="fw-bold mb-1">SEO & Content Strategy Package</h6><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">TechNova Solutions</p></div>
+                                        <span class="badge-status status-pending">Planning</span>
+                                    </div>
+                                    <div class="mb-2"><div class="d-flex justify-content-between" style="font-size:0.8rem"><span style="color:var(--secondary)">Progress</span><span class="fw-bold">15%</span></div><div class="progress-custom"><div class="progress-bar-custom bg-warning" style="width:15%"></div></div></div>
+                                    <div class="d-flex gap-4" style="font-size:0.8rem;color:var(--secondary)"><span><i class="fas fa-calendar me-1"></i>Due: Oct 20, 2026</span><span><i class="fas fa-users me-1"></i>3 members</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+<div class="content-card h-100">                            <div class="card-header-custom"><h5 class="card-title">Project Timeline</h5></div>
+                            <div class="card-body-custom">
+                                <div style="position:relative;padding-left:1.5rem;border-left:2px solid #e2e8f0">
+                                    <div class="mb-4" style="position:relative">
+                                        <div style="position:absolute;left:-1.85rem;width:12px;height:12px;border-radius:50%;background:var(--primary);border:3px solid #fff;box-shadow:0 0 0 2px #e2e8f0"></div>
+                                        <p class="fw-bold mb-1" style="font-size:0.875rem">Q3 2026 Planning</p>
+                                        <p class="mb-1" style="font-size:0.75rem;color:var(--secondary)">Jul 1 - Sep 30</p>
+                                        <p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">3 new projects scheduled</p>
+                                    </div>
+                                    <div class="mb-4" style="position:relative">
+                                        <div style="position:absolute;left:-1.85rem;width:12px;height:12px;border-radius:50%;background:var(--success);border:3px solid #fff;box-shadow:0 0 0 2px #e2e8f0"></div>
+                                        <p class="fw-bold mb-1" style="font-size:0.875rem">Q2 2026 Deliveries</p>
+                                        <p class="mb-1" style="font-size:0.75rem;color:var(--secondary)">Apr 1 - Jun 30</p>
+                                        <p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">8 projects completed</p>
+                                    </div>
+                                    <div class="mb-4" style="position:relative">
+                                        <div style="position:absolute;left:-1.85rem;width:12px;height:12px;border-radius:50%;background:#cbd5e1;border:3px solid #fff;box-shadow:0 0 0 2px #e2e8f0"></div>
+                                        <p class="fw-bold mb-1" style="font-size:0.875rem">Q1 2026 Review</p>
+                                        <p class="mb-1" style="font-size:0.75rem;color:var(--secondary)">Jan 1 - Mar 31</p>
+                                        <p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">12 projects delivered</p>
+                                    </div>
+                                    <div style="position:relative">
+                                        <div style="position:absolute;left:-1.85rem;width:12px;height:12px;border-radius:50%;background:#cbd5e1;border:3px solid #fff;box-shadow:0 0 0 2px #e2e8f0"></div>
+                                        <p class="fw-bold mb-1" style="font-size:0.875rem">Q4 2025 Wrap-up</p>
+                                        <p class="mb-1" style="font-size:0.75rem;color:var(--secondary)">Oct 1 - Dec 31</p>
+                                        <p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">10 projects delivered</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SERVICES SECTION -->
+            <section class="content-section" id="services">
+                <div class="section-header">
+                    <h1 class="section-title">Agency Services</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Services</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="service-icon bg-primary-soft"><i class="fas fa-laptop-code text-primary"></i></div>
+                            <h4>Web Design & Development</h4>
+                            <p>Responsive websites, e-commerce stores, and custom web applications.</p>
+                            <div class="service-stat"><span>Projects Delivered</span><span>48</span></div>
+                            <div class="service-stat"><span>Client Satisfaction</span><span style="color:var(--success)">98.5%</span></div>
+                            <a href="404.html" class="btn btn-outline-primary w-100 btn-sm" style="border-color:var(--primary);color:var(--primary)">Manage Service</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="service-icon" style="background:rgba(139,92,246,0.1)"><i class="fas fa-search" style="color:#8b5cf6"></i></div>
+                            <h4>SEO Optimization</h4>
+                            <p>On-page SEO, keyword strategy, and search ranking improvement.</p>
+                            <div class="service-stat"><span>Keywords Ranked</span><span>12.4K</span></div>
+                            <div class="service-stat"><span>Avg. Traffic Growth</span><span style="color:var(--success)">+94%</span></div>
+                            <a href="404.html" class="btn btn-outline-primary w-100 btn-sm" style="border-color:var(--primary);color:var(--primary)">Manage Service</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="service-icon bg-success-soft"><i class="fas fa-hashtag text-success"></i></div>
+                            <h4>Social Media Marketing</h4>
+                            <p>Campaign management, content calendars, and audience growth.</p>
+                            <div class="service-stat"><span>Active Campaigns</span><span>26</span></div>
+                            <div class="service-stat"><span>Monthly Reach</span><span style="color:var(--success)">2.4M</span></div>
+                            <a href="404.html" class="btn btn-outline-primary w-100 btn-sm" style="border-color:var(--primary);color:var(--primary)">Manage Service</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="service-icon bg-warning-soft"><i class="fas fa-palette text-warning"></i></div>
+                            <h4>Branding & Identity</h4>
+                            <p>Logo design, brand guidelines, and complete visual identity systems.</p>
+                            <div class="service-stat"><span>Brands Created</span><span>34</span></div>
+                            <div class="service-stat"><span>Design Assets</span><span style="color:var(--success)">1.8K</span></div>
+                            <a href="404.html" class="btn btn-outline-primary w-100 btn-sm" style="border-color:var(--primary);color:var(--primary)">Manage Service</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="service-icon" style="background:rgba(6,182,212,0.1)"><i class="fas fa-pen-fancy" style="color:var(--info)"></i></div>
+                            <h4>Content Marketing</h4>
+                            <p>Blog writing, copywriting, video scripts, and email newsletters.</p>
+                            <div class="service-stat"><span>Articles Published</span><span>560</span></div>
+                            <div class="service-stat"><span>Avg. Engagement</span><span style="color:var(--success)">6.8%</span></div>
+                            <a href="404.html" class="btn btn-outline-primary w-100 btn-sm" style="border-color:var(--primary);color:var(--primary)">Manage Service</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card">
+                            <div class="service-icon" style="background:rgba(236,72,153,0.1)"><i class="fas fa-rectangle-ad" style="color:#ec4899"></i></div>
+                            <h4>PPC & Paid Advertising</h4>
+                            <p>Google Ads, Meta Ads, and performance marketing campaigns.</p>
+                            <div class="service-stat"><span>Ad Campaigns</span><span>32</span></div>
+                            <div class="service-stat"><span>Avg. ROAS</span><span style="color:var(--success)">4.2x</span></div>
+                            <a href="404.html" class="btn btn-outline-primary w-100 btn-sm" style="border-color:var(--primary);color:var(--primary)">Manage Service</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TEAM MEMBERS SECTION -->
+            <section class="content-section" id="team">
+                <div class="section-header">
+                    <h1 class="section-title">Team Members</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Team</li>
+                        </ol>
+                    </nav>
+                </div>
+<div class="content-card h-100">                    <div class="card-header-custom">
+                        <h5 class="card-title">Digital Agency Team</h5>
+                        <a href="404.html" class="btn btn-sm btn-primary" style="background:var(--primary);border-color:var(--primary)"><i class="fas fa-plus me-2"></i>Add Member</a>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="row g-4">
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="team-card">
+                                    <img src="men.webp" alt="Team">
+                                    <h4>Marcus Chen</h4>
+                                    <p class="role">Creative Director</p>
+                                    <p class="projects">8 projects active</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="404.html" class="btn-action"><i class="fas fa-envelope"></i></a>
+                                        <a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="team-card">
+                                    <img src="asha.webp" alt="Team">
+                                    <h4>Sarah Johnson</h4>
+                                    <p class="role" style="color:#8b5cf6">Social Media Manager</p>
+                                    <p class="projects">5 projects active</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="404.html" class="btn-action"><i class="fas fa-envelope"></i></a>
+                                        <a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="team-card">
+                                    <img src="reddy.webp" alt="Team">
+                                    <h4>David Kim</h4>
+                                    <p class="role" style="color:var(--success)">Lead Web Developer</p>
+                                    <p class="projects">6 projects active</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="404.html" class="btn-action"><i class="fas fa-envelope"></i></a>
+                                        <a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="team-card">
+                                    <img src="asha.webp" alt="Team">
+                                    <h4>Emily Davis</h4>
+                                    <p class="role" style="color:var(--warning)">SEO Specialist</p>
+                                    <p class="projects">4 projects active</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="404.html" class="btn-action"><i class="fas fa-envelope"></i></a>
+                                        <a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="team-card">
+                                    <img src="5.webp" alt="Team">
+                                    <h4>James Wilson</h4>
+                                    <p class="role" style="color:var(--info)">PPC Strategist</p>
+                                    <p class="projects">7 projects active</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="404.html" class="btn-action"><i class="fas fa-envelope"></i></a>
+                                        <a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <div class="team-card">
+                                    <img src="14.webp" alt="Team">
+                                    <h4>Lisa Park</h4>
+                                    <p class="role" style="color:#ec4899">UI/UX Designer</p>
+                                    <p class="projects">3 projects active</p>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="404.html" class="btn-action"><i class="fas fa-envelope"></i></a>
+                                        <a href="404.html" class="btn-action"><i class="fas fa-edit"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MESSAGES SECTION -->
+            <section class="content-section" id="messages">
+                <div class="section-header">
+                    <h1 class="section-title">Messages</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Messages</li>
+                        </ol>
+                    </nav>
+                </div>
+<div class="content-card h-100">                    <div class="row g-0">
+                        <div class="col-lg-4 chat-sidebar" style="border-right:1px solid #e2e8f0">
+                            <div class="p-3" style="border-bottom:1px solid #e2e8f0"><h6 class="fw-bold mb-0">Conversations</h6></div>
+                            <div class="p-2">
+                                <div class="chat-contact active">
+                                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face" alt="">
+                                    <div class="chat-contact-info">
+                                        <p class="chat-contact-name">FashionHub Retail</p>
+                                        <p class="chat-contact-msg">Can we review the new homepage design?</p>
+                                    </div>
+                                    <span class="chat-contact-time">2m</span>
+                                </div>
+                                <div class="chat-contact">
+                                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face" alt="">
+                                    <div class="chat-contact-info">
+                                        <p class="chat-contact-name">GreenLeaf Organics</p>
+                                        <p class="chat-contact-msg">The campaign is performing great!</p>
+                                    </div>
+                                    <span class="chat-contact-time">1h</span>
+                                </div>
+                                <div class="chat-contact">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" alt="">
+                                    <div class="chat-contact-info">
+                                        <p class="chat-contact-name">TechNova Solutions</p>
+                                        <p class="chat-contact-msg">Invoice attached</p>
+                                    </div>
+                                    <span class="chat-contact-time">3h</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="p-3 d-flex align-items-center gap-3" style="border-bottom:1px solid #e2e8f0">
+                                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face" style="width:40px;height:40px;border-radius:50%;object-fit:cover" alt="">
+                                <div><p class="fw-bold mb-0" style="font-size:0.875rem">FashionHub Retail</p><p class="mb-0" style="font-size:0.75rem;color:var(--success)">Online</p></div>
+                            </div>
+                            <div class="chat-messages">
+                                <div class="chat-message">
+                                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face" alt="">
+                                    <div class="chat-bubble received">
+                                        <p class="mb-0">Hi Marcus, can we schedule a call to review the new homepage design for the website redesign?</p>
+                                        <p class="chat-bubble-time">10:30 AM</p>
+                                    </div>
+                                </div>
+                                <div class="chat-message sent">
+                                    <div class="chat-bubble sent">
+                                        <p class="mb-0">Absolutely! I am available tomorrow at 2 PM EST. Does that work?</p>
+                                        <p class="chat-bubble-time">10:32 AM</p>
+                                    </div>
+                                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" alt="">
+                                </div>
+                                <div class="chat-message">
+                                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face" alt="">
+                                    <div class="chat-bubble received">
+                                        <p class="mb-0">Perfect! I will send the calendar invite. Also, we would like to add a landing page for the fall collection.</p>
+                                        <p class="chat-bubble-time">10:35 AM</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" class="chat-input" placeholder="Type a message...">
+                                <a href="404.html" class="chat-send-btn"><i class="fas fa-paper-plane"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORTS SECTION -->
+            <section class="content-section" id="reports">
+                <div class="section-header">
+                    <h1 class="section-title">Reports</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Reports</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+<div class="content-card h-100">                            <div class="card-header-custom">
+                                <h5 class="card-title">Monthly Performance</h5>
+                                <a href="404.html" class="text-primary" style="font-size:0.8rem">Download PDF</a>
+                            </div>
+                            <div class="card-body-custom">
+                                <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+<div class="content-card h-100">                            <div class="card-header-custom">
+                                <h5 class="card-title">Service Utilization</h5>
+                                <a href="404.html" class="text-primary" style="font-size:0.8rem">Download PDF</a>
+                            </div>
+                            <div class="card-body-custom">
+                                <div class="chart-container"><canvas id="serviceChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-card h-100">
+                    <div class="card-header-custom"><h5 class="card-title">Generated Reports</h5></div>
+                    <div class="card-body-custom">
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3" style="border:1px solid #e2e8f0">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center" style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.1)"><i class="fas fa-file-pdf text-danger"></i></div>
+                                <div><p class="fw-bold mb-0" style="font-size:0.875rem">Q2 2026 Financial Report</p><p class="mb-0" style="font-size:0.75rem;color:var(--secondary)">Generated on Jul 1, 2026 - 2.4 MB</p></div>
+                            </div>
+                            <a href="404.html" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-2"></i>Download</a>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3" style="border:1px solid #e2e8f0">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center" style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.1)"><i class="fas fa-file-pdf text-danger"></i></div>
+                                <div><p class="fw-bold mb-0" style="font-size:0.875rem">Campaign Performance Report</p><p class="mb-0" style="font-size:0.75rem;color:var(--secondary)">Generated on Jun 28, 2026 - 1.8 MB</p></div>
+                            </div>
+                            <a href="404.html" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-2"></i>Download</a>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="border:1px solid #e2e8f0">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center" style="width:40px;height:40px;border-radius:10px;background:rgba(16,185,129,0.1)"><i class="fas fa-file-excel text-success"></i></div>
+                                <div><p class="fw-bold mb-0" style="font-size:0.875rem">Client Onboarding Metrics</p><p class="mb-0" style="font-size:0.75rem;color:var(--secondary)">Generated on Jun 25, 2026 - 856 KB</p></div>
+                            </div>
+                            <a href="404.html" class="btn btn-sm btn-outline-secondary"><i class="fas fa-download me-2"></i>Download</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANALYTICS SECTION -->
+            <section class="content-section" id="analytics">
+                <div class="section-header">
+                    <h1 class="section-title">Analytics</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Analytics</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="content-card h-100">
+                            <div class="card-header-custom"><h5 class="card-title">Traffic Sources</h5></div>
+                            <div class="card-body-custom">
+                                <div class="chart-container"><canvas id="trafficChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="content-card h-100">
+                            <div class="card-header-custom"><h5 class="card-title">Campaign Engagement</h5></div>
+                            <div class="card-body-custom">
+                                <div class="chart-container"><canvas id="engagementChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="stat-card text-center">
+                            <p class="stat-value mb-1">24.5K</p>
+                            <p class="stat-label">Total Page Views</p>
+                            <p class="stat-change positive"><i class="fas fa-arrow-up"></i> +18% vs last month</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center">
+                            <p class="stat-value mb-1">3m 42s</p>
+                            <p class="stat-label">Avg. Session Duration</p>
+                            <p class="stat-change positive"><i class="fas fa-arrow-up"></i> +12% vs last month</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card text-center">
+                            <p class="stat-value mb-1">68%</p>
+                            <p class="stat-label">Bounce Rate</p>
+                            <p class="stat-change positive"><i class="fas fa-arrow-down"></i> -5% vs last month</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS SECTION -->
+            <section class="content-section" id="settings">
+                <div class="section-header">
+                    <h1 class="section-title">System Settings</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Settings</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="content-card h-100">
+                            <div class="card-header-custom"><h5 class="card-title">General Settings</h5></div>
+                            <div class="card-body-custom">
+                                <div class="d-flex align-items-center justify-content-between py-3" style="border-bottom:1px solid #f1f5f9">
+                                    <div><p class="fw-bold mb-1" style="font-size:0.875rem">Email Notifications</p><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">Receive email alerts for new leads and projects</p></div>
+                                    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between py-3" style="border-bottom:1px solid #f1f5f9">
+                                    <div><p class="fw-bold mb-1" style="font-size:0.875rem">Dark Mode</p><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">Switch between light and dark themes</p></div>
+                                    <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between py-3" style="border-bottom:1px solid #f1f5f9">
+                                    <div><p class="fw-bold mb-1" style="font-size:0.875rem">Campaign Alerts</p><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">Get notified when ad budgets reach 80%</p></div>
+                                    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between py-3">
+                                    <div><p class="fw-bold mb-1" style="font-size:0.875rem">Two-Factor Authentication</p><p class="mb-0" style="font-size:0.8rem;color:var(--secondary)">Enable 2FA for enhanced security</p></div>
+                                    <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                                </div>
+                            </div>
+                            <div class="card-body-custom" style="border-top:1px solid #e2e8f0">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="404.html" class="btn btn-outline-secondary">Cancel</a>
+                                    <a href="404.html" class="btn btn-primary" style="background:var(--primary);border-color:var(--primary)">Save Changes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROFILE SECTION -->
+            <section class="content-section" id="profile">
+                <div class="section-header">
+                    <h1 class="section-title">Admin Profile</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                            <li class="breadcrumb-item active">Profile</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="content-card h-100">
+                            <div class="card-header-custom"><h5 class="card-title">Personal Information</h5></div>
+                            <div class="card-body-custom">
+                                <div class="d-flex align-items-center gap-4 mb-4">
+                                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0" alt="">
+                                    <a href="404.html" class="btn btn-outline-secondary btn-sm"><i class="fas fa-camera me-2"></i>Change Photo</a>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control-custom" value="Marcus Chen">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control-custom" value="marcus.chen@stacklyagency.com">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phone</label>
+                                        <input type="tel" class="form-control-custom" value="+1 (555) 123-4567">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Role</label>
+                                        <input type="text" class="form-control-custom" value="Agency Admin" disabled style="background:#f8fafc">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Bio</label>
+                                    <textarea class="form-control-custom" rows="3">Creative Director with 10+ years of experience in digital marketing, branding, and web design.</textarea>
+                                </div>
+                            </div>
+                            <div class="card-body-custom" style="border-top:1px solid #e2e8f0">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="404.html" class="btn btn-outline-secondary">Cancel</a>
+                                    <a href="404.html" class="btn btn-primary" style="background:var(--primary);border-color:var(--primary)">Save Changes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <p>&copy; 2026 Stackly Digital Agency. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar Navigation
+        function showSection(sectionId) {
+                localStorage.setItem("lastSection", sectionId);
+
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('nav-' + sectionId).classList.add('active');
+
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'clients': 'Client Management',
+                'projects': 'Project Management',
+                'services': 'Agency Services',
+                'team': 'Team Members',
+                'messages': 'Messages',
+                'reports': 'Reports',
+                'analytics': 'Analytics',
+                'settings': 'System Settings',
+                'profile': 'Admin Profile'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
+
+            if (window.innerWidth < 992) {
+                document.getElementById('sidebar').classList.remove('show');
+                document.getElementById('mobileOverlay').classList.remove('show');
+            }
+
+            if (sectionId === 'dashboard') initDashboardCharts();
+            if (sectionId === 'reports') initReportsCharts();
+            if (sectionId === 'analytics') initAnalyticsCharts();
+        }
+
+        // Mobile Sidebar Toggle
+        document.getElementById('hamburgerMenu').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.add('show');
+            document.getElementById('mobileOverlay').classList.add('show');
+        });
+
+        document.getElementById('sidebarClose').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('show');
+            document.getElementById('mobileOverlay').classList.remove('show');
+        });
+
+        document.getElementById('mobileOverlay').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('show');
+            this.classList.remove('show');
+        });
+
+        // Desktop Sidebar Toggle
+        let sidebarCollapsed = false;
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            sidebarCollapsed = !sidebarCollapsed;
+            document.getElementById('sidebar').classList.toggle('collapsed', sidebarCollapsed);
+            document.getElementById('mainWrapper').classList.toggle('sidebar-collapsed', sidebarCollapsed);
+        });
+
+        // Charts
+        function initDashboardCharts() {
+            const rc = document.getElementById('revenueChart');
+            if (rc && !rc.chart) {
+                rc.chart = new Chart(rc, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Revenue ($K)',
+                            data: [210, 250, 285, 310, 345, 380],
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99,102,241,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+                });
+            }
+            const psc = document.getElementById('projectStatusChart');
+            if (psc && !psc.chart) {
+                psc.chart = new Chart(psc, {
+                    type: 'doughnut',
+                    data: { labels: ['Active', 'Completed', 'Pending'], datasets: [{ data: [22, 15, 8], backgroundColor: ['#6366f1', '#10b981', '#f59e0b'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
+                });
+            }
+        }
+
+        function initReportsCharts() {
+            const mc = document.getElementById('monthlyChart');
+            if (mc && !mc.chart) {
+                mc.chart = new Chart(mc, {
+                    type: 'bar',
+                    data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'Projects', data: [6, 9, 12, 8, 14, 11], backgroundColor: '#6366f1', borderRadius: 6 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+                });
+            }
+            const sc = document.getElementById('serviceChart');
+            if (sc && !sc.chart) {
+                sc.chart = new Chart(sc, {
+                    type: 'bar',
+                    data: { labels: ['Web Design', 'SEO', 'Social Media', 'Branding', 'Content', 'PPC Ads'], datasets: [{ label: 'Utilization %', data: [88, 76, 92, 64, 70, 82], backgroundColor: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#06b6d4', '#ec4899'], borderRadius: 6 }] },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
+                });
+            }
+        }
+
+        function initAnalyticsCharts() {
+            const tc = document.getElementById('trafficChart');
+            if (tc && !tc.chart) {
+                tc.chart = new Chart(tc, {
+                    type: 'pie',
+                    data: { labels: ['Organic Search', 'Social Media', 'Direct', 'Referral', 'Email'], datasets: [{ data: [38, 26, 16, 12, 8], backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                });
+            }
+            const ec = document.getElementById('engagementChart');
+            if (ec && !ec.chart) {
+                ec.chart = new Chart(ec, {
+                    type: 'line',
+                    data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], datasets: [{ label: 'Campaign Interactions', data: [420, 510, 480, 620, 580, 390, 340], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, pointRadius: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() { initDashboardCharts(); });
+
+
+
+const email = localStorage.getItem("loggedInEmail");
+
+if (email) {
+    document.getElementById("welcomeUser").innerHTML =
+        "Welcome, " + email;
+}
+
+window.addEventListener("load", () => {
+
+    const lastSection = localStorage.getItem("lastSection");
+
+    if (lastSection) {
+        showSection(lastSection);
+    }
+
+});
+
+
+
+    </script>
+</body>
+</html>
